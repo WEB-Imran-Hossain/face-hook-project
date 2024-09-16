@@ -15,6 +15,10 @@ const LoginForm = () => {
 
   const submitForm = (formData) => {
     console.log(formData);
+    //Make an API Call
+    // Will Return Tokens and Logged in user information
+
+    
     const user ={...formData}
     setAuth({user});
     navigate("/")
