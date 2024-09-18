@@ -7,8 +7,8 @@ const HomePage = () => {
   console.log(auth);
   
   return (
-    <div>
-      HomePage
+    <div className='flex flex-col'>
+      <h1>HomePage</h1>
       <Link to="/me">Go to profile page</Link>
       </div>
     

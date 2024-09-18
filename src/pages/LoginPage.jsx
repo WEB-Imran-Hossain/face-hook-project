@@ -7,7 +7,6 @@ const LoginPage = () => {
     <main className="flex min-h-screen items-center justify-center bg-deepDark py-8">
       <div className="w-full px-4 md:px-6 lg:px-0 max-w-[1368px] flex-1">
         <div className="grid gap-8 items-center lg:grid-cols-2">
-
           {/* Left Side: Illustration and Title */}
           <div className="flex flex-col justify-center items-start">
             {/* Illustration: Hidden on small screens */}
@@ -53,6 +52,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-
-
-

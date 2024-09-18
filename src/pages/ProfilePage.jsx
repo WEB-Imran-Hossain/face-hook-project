@@ -18,17 +18,19 @@ const ProfilePage = () => {
       try {
         const response = await api.get(
           `${import.meta.env.VITE_SERVER_BASE_URL}/profile/${auth?.user?.id}`
+          
         );
+        
         setUser(response?.data?.user);
         setPosts(response?.data?.posts);
       } catch (error) {
-        setError("Failed to fetch profile data.");
+        setError(error.response?.data?.message || "Failed to fetch profile data.");
       } finally {
         setLoading(false);
       }
     };
     fetchProfile();
-  }, [auth, api]); // Add dependencies to avoid stale data
+  }, [auth]); // Add dependencies to avoid stale data
 
   if (loading) {
     return (
@@ -39,7 +41,7 @@ const ProfilePage = () => {
         >
           <span className="sr-only">Loading...</span>
         </div>
-        <p>Fetching your profile data...</p>
+        <p className="ml-2">Fetching your profile data...</p>
       </div>
     );
   }
@@ -52,12 +54,11 @@ const ProfilePage = () => {
     <div className="p-4">
       {user ? (
         <>
-          <h1 className="text-xl font-semibold">{user.firstName}'s Profile</h1>
-          <p>Posts: {posts.length}</p>
-          {/* Render more user information here */}
+          <h1 className="text-xl font-bold">Welcome, {user?.firstName} {user?.lastName}</h1>
+          <p className="mt-2">You have {posts?.length} {posts?.length === 1 ? 'post' : 'posts'}</p>
         </>
       ) : (
-        <div>No profile data available</div>
+        <p>No profile data available</p>
       )}
     </div>
   );
