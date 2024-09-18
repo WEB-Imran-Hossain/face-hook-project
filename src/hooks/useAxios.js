@@ -1,65 +1,63 @@
+import React from "react";
 import { useEffect } from "react";
-import { api } from "../api";
-import { useAuth } from "./useAuth";
 import axios from "axios";
-
-import { useEffect } from "react";
-import { api } from "../api";
+import { api } from "../api"; // Custom axios instance
 import { useAuth } from "./useAuth";
-import axios from "axios";
 
 const useAxios = () => {
   const { auth, setAuth } = useAuth();
 
   useEffect(() => {
-    // Add a request interceptor
+    // Request Interceptor: Attach the authorization token to every request
     const requestInterceptor = api.interceptors.request.use(
       (config) => {
-        const authToken = auth?.authToken;
-        if (authToken) {
-          config.headers.Authorization = `Bearer ${authToken}`;
+        const token = auth?.authToken;
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
       (error) => Promise.reject(error)
     );
 
-    // Add a response interceptor
+    // Response Interceptor: Handle token refresh if 401 Unauthorized occurs
     const responseInterceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
         if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
+          originalRequest._retry = true; // Avoid infinite loops
           try {
             const refreshToken = auth?.refreshToken;
             const { data } = await axios.post(
               `${import.meta.env.VITE_SERVER_BASE_URL}/auth/refresh-token`,
               { refreshToken }
             );
-            const { token } = data;
 
-            console.log(`New Token: ${token}`);
-            setAuth({ ...auth, authToken: token });
+            const newToken = data.token;
+            // Update the auth token in the state
+            setAuth((prevAuth) => ({ ...prevAuth, authToken: newToken }));
 
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return axios(originalRequest);
-          } catch (error) {
-            throw error;
+            // Update the original request with the new token and retry it
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return axios(originalRequest); // Retry the original request
+          } catch (refreshError) {
+            return Promise.reject(refreshError); // Forward the error if refresh fails
           }
         }
-        return Promise.reject(error);
+
+        return Promise.reject(error); // Reject any other errors
       }
     );
 
-    // Clean up interceptors when component unmounts
+    // Cleanup interceptors when the component unmounts
     return () => {
       api.interceptors.request.eject(requestInterceptor);
       api.interceptors.response.eject(responseInterceptor);
     };
-  }, [auth, authToken]);
+  }, [auth, setAuth]); // Dependencies are auth and setAuth
 
-  return api; // Optionally return the axios instance if needed
+  return api; // Return the custom axios instance
 };
 
 export default useAxios;
