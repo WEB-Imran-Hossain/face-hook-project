@@ -2,6 +2,7 @@ import { useAuth } from "../hooks/useAuth";
 import useAxios from "../hooks/useAxios";
 import { useEffect } from "react";
 import {useProfile} from "../hooks/useProfile";
+import { actions } from "../actions";
 
 const ProfilePage = () => {
 const {state, dispatch} = useProfile();
@@ -12,25 +13,25 @@ const {state, dispatch} = useProfile();
   useEffect(() => {
     const fetchProfile = async () => {
       if (!auth?.user?.id) return; // Avoid making the request if user is not logged in
-      setLoading(true);
+      dispatch({type: actions.profile.DATA_FETCHING})
       try {
         const response = await api.get(
           `${import.meta.env.VITE_SERVER_BASE_URL}/profile/${auth?.user?.id}`
           
         );
         
-        setUser(response?.data?.user);
-        setPosts(response?.data?.posts);
+       if (response.status === 200) {
+        dispatch({type: actions.profile.DATA_FETCHED, data: response.data});
+       }
       } catch (error) {
-        setError(error.response?.data?.message || "Failed to fetch profile data.");
-      } finally {
-        setLoading(false);
-      }
+        console.error(error);
+        dispatch({type: actions.profile.DATA_FETCH_ERROR, error: error});
+      } 
     };
     fetchProfile();
-  }, [auth]); // Add dependencies to avoid stale data
+  }, []); // Add dependencies to avoid stale data
 
-  if (loading) {
+  if (state?.loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div
@@ -44,20 +45,16 @@ const {state, dispatch} = useProfile();
     );
   }
 
-  if (error) {
-    return <div className="text-red-500">Error: {error}</div>;
+  if (state?.error) {
+    return <div className="text-red-500">Error: {state?.error}</div>;
   }
 
   return (
     <div className="p-4">
-      {user ? (
         <>
-          <h1 className="text-xl font-bold">Welcome, {user?.firstName} {user?.lastName}</h1>
-          <p className="mt-2">You have {posts?.length} {posts?.length === 1 ? 'post' : 'posts'}</p>
+          <h1 className="text-xl font-bold">Welcome, {state?.user?.firstName}</h1>
+          <p className="mt-2">You have {state?.posts?.length}</p>
         </>
-      ) : (
-        <p>No profile data available</p>
-      )}
     </div>
   );
 };
