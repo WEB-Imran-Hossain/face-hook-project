@@ -7,7 +7,6 @@ const useAxios = () => {
   const { auth, setAuth } = useAuth();
 
   useEffect(() => {
-    // Request Interceptor: Attach the authorization token to every request
     const requestInterceptor = api.interceptors.request.use(
       (config) => {
         const token = auth?.authToken;
@@ -19,13 +18,12 @@ const useAxios = () => {
       (error) => Promise.reject(error)
     );
 
-    // Response Interceptor: Handle token refresh if 401 Unauthorized occurs
     const responseInterceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
         if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true; // Avoid infinite loops
+          originalRequest._retry = true;
           try {
             const refreshToken = auth?.refreshToken;
             const { data } = await axios.post(
@@ -34,29 +32,24 @@ const useAxios = () => {
             );
 
             const newToken = data.token;
-            // Update the auth token in the state
             setAuth((prevAuth) => ({ ...prevAuth, authToken: newToken }));
-
-            // Update the original request with the new token and retry it
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            return axios(originalRequest); // Retry the original request
+            return axios(originalRequest);
           } catch (refreshError) {
-            return Promise.reject(refreshError); // Forward the error if refresh fails
+            return Promise.reject(refreshError);
           }
         }
-
-        return Promise.reject(error); // Reject any other errors
+        return Promise.reject(error);
       }
     );
 
-    // Cleanup interceptors when the component unmounts
     return () => {
       api.interceptors.request.eject(requestInterceptor);
       api.interceptors.response.eject(responseInterceptor);
     };
-  }, [auth, setAuth]); // Dependencies are auth and setAuth
+  }, [auth, setAuth]);
 
-  return api; // Return the custom axios instance
+  return { api }; // Make sure to return an object with `api`
 };
 
 export default useAxios;

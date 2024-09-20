@@ -1,35 +1,47 @@
 import { useAuth } from "../hooks/useAuth";
 import useAxios from "../hooks/useAxios";
 import { useEffect } from "react";
-import {useProfile} from "../hooks/useProfile";
+import { useProfile } from "../hooks/useProfile";
 import { actions } from "../actions";
+import ProfileInfo from "../components/profile/ProfileInfo";
+import MyPosts from "../components/profile/MyPosts";
 
 const ProfilePage = () => {
-const {state, dispatch} = useProfile();
+  const { state, dispatch } = useProfile();
 
-  const { api } = useAxios();
+  const {api}  = useAxios();
   const { auth } = useAuth();
 
   useEffect(() => {
+    let isMounted = true; // Add a flag to track if the component is mounted
+  
     const fetchProfile = async () => {
-      if (!auth?.user?.id) return; // Avoid making the request if user is not logged in
-      dispatch({type: actions.profile.DATA_FETCHING})
+      if (!auth?.user?.id) return;
+      dispatch({ type: actions.profile.DATA_FETCHING });
       try {
         const response = await api.get(
           `${import.meta.env.VITE_SERVER_BASE_URL}/profile/${auth?.user?.id}`
-          
         );
-        
-       if (response.status === 200) {
-        dispatch({type: actions.profile.DATA_FETCHED, data: response.data});
-       }
+  
+        if (response.status === 200 && isMounted) {
+          dispatch({ type: actions.profile.DATA_FETCHED, data: response.data });
+        }
       } catch (error) {
-        console.error(error);
-        dispatch({type: actions.profile.DATA_FETCH_ERROR, error: error});
-      } 
+        console.error(error?.message || "Unknown error occurred");
+        if (isMounted) {
+          dispatch({ type: actions.profile.DATA_FETCH_ERROR, error: error?.message || "Error fetching profile data" });
+        }
+      }      
     };
+  
     fetchProfile();
-  }, []); // Add dependencies to avoid stale data
+  
+    return () => {
+      isMounted = false; // Cleanup function to avoid setting state on unmounted component
+    };
+  }, [auth, api, dispatch]);
+  
+  
 
   if (state?.loading) {
     return (
@@ -51,10 +63,10 @@ const {state, dispatch} = useProfile();
 
   return (
     <div className="p-4">
-        <>
-          <h1 className="text-xl font-bold">Welcome, {state?.user?.firstName}</h1>
-          <p className="mt-2">You have {state?.posts?.length}</p>
-        </>
+      <>
+        <ProfileInfo />
+        <MyPosts />
+      </>
     </div>
   );
 };
