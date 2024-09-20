@@ -9,12 +9,12 @@ import MyPosts from "../components/profile/MyPosts";
 const ProfilePage = () => {
   const { state, dispatch } = useProfile();
 
-  const {api}  = useAxios();
+  const { api } = useAxios();
   const { auth } = useAuth();
 
   useEffect(() => {
     let isMounted = true; // Add a flag to track if the component is mounted
-  
+
     const fetchProfile = async () => {
       if (!auth?.user?.id) return;
       dispatch({ type: actions.profile.DATA_FETCHING });
@@ -22,26 +22,27 @@ const ProfilePage = () => {
         const response = await api.get(
           `${import.meta.env.VITE_SERVER_BASE_URL}/profile/${auth?.user?.id}`
         );
-  
+
         if (response.status === 200 && isMounted) {
           dispatch({ type: actions.profile.DATA_FETCHED, data: response.data });
         }
       } catch (error) {
         console.error(error?.message || "Unknown error occurred");
         if (isMounted) {
-          dispatch({ type: actions.profile.DATA_FETCH_ERROR, error: error?.message || "Error fetching profile data" });
+          dispatch({
+            type: actions.profile.DATA_FETCH_ERROR,
+            error: error?.message || "Error fetching profile data",
+          });
         }
-      }      
+      }
     };
-  
+
     fetchProfile();
-  
+
     return () => {
       isMounted = false; // Cleanup function to avoid setting state on unmounted component
     };
   }, [auth, api, dispatch]);
-  
-  
 
   if (state?.loading) {
     return (
