@@ -1,0 +1,9 @@
+export const actions={
+    profile:{
+        "DATA_FETCHING": "PROFILE_DATA_FETCHING",
+        "DATA_FETCHED": "PROFILE-DATA_FETCHED",
+        "DATA-FETCH_ERROR": "PROFILE_DATA_FETCH_ERROR",   
+        "USER-DATA_EDITED": "PROFILE_USER_DATA_EDITED",
+        "IMAGE_UPDATED": "PROFILE_IMAGE_UPDATED",
+    }   
+}

@@ -1,12 +1,10 @@
 import { useAuth } from "../hooks/useAuth";
 import useAxios from "../hooks/useAxios";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import {useProfile} from "../hooks/useProfile";
 
 const ProfilePage = () => {
-  const [user, setUser] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+const {state, dispatch} = useProfile();
 
   const { api } = useAxios();
   const { auth } = useAuth();

@@ -1,29 +1,28 @@
-import { useAuth } from "../hooks/useAuth"
-import { Outlet, Navigate } from "react-router-dom"
-import Header from "../common/Header"
-
+import { useAuth } from "../hooks/useAuth";
+import { Outlet, Navigate } from "react-router-dom";
+import Header from "../common/Header";
+import ProfileProvider from "../providers/ProfileProvider";
 const PrivateRoutes = () => {
-    const { auth } = useAuth()
-   
+  const { auth } = useAuth();
+
   return (
     <>
-    {
-        auth.user ? (
+      {auth.authToken ? (
         <>
-         <Header />
-          <main className="mx-auto max-w-[1020px] py-8">
+          <ProfileProvider>
+            <Header />
+            <main className="mx-auto max-w-[1020px] py-8">
               <div className="container">
-               
-               <Outlet />
-            </div>
-          </main>
+                <Outlet />
+              </div>
+            </main>
+          </ProfileProvider>
         </>
-        ) : (
-<Navigate to="/login" />
-        )
-    }
+      ) : (
+        <Navigate to="/login" />
+      )}
     </>
-  )
-}
+  );
+};
 
-export default PrivateRoutes
+export default PrivateRoutes;
